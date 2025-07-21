@@ -1,16 +1,63 @@
+let tasks = [];
+
+window.onload = function () {
+  if (localStorage.getItem("tasks")) {
+    tasks = JSON.parse(localStorage.getItem("tasks"));
+    renderTasks();
+  }
+};
+
 function addTask() {
   const input = document.getElementById("taskInput");
-  const task = input.value;
-  if (task.trim() === "") return;
+  const taskText = input.value.trim();
+  if (taskText === "") return;
 
-  const li = document.createElement("li");
-  li.textContent = task;
+  tasks.push({ text: taskText, completed: false });
+  input.value = "";
+  saveTasks();
+  renderTasks();
+}
 
-  // Delete on click
-  li.onclick = function () {
-    this.remove();
-  };
+function renderTasks() {
+  const list = document.getElementById("taskList");
+  list.innerHTML = "";
 
-  document.getElementById("taskList").appendChild(li);
-  input.value = ""; // Clear input
+  tasks.forEach((task, index) => {
+    const li = document.createElement("li");
+    li.className = task.completed ? "completed" : "";
+
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.checked = task.completed;
+    checkbox.onclick = () => toggleComplete(index);
+
+    const span = document.createElement("span");
+    span.textContent = task.text;
+
+    const deleteBtn = document.createElement("span");
+    deleteBtn.textContent = "🗑️";
+    deleteBtn.className = "delete-btn";
+    deleteBtn.onclick = () => deleteTask(index);
+
+    li.appendChild(checkbox);
+    li.appendChild(span);
+    li.appendChild(deleteBtn);
+    list.appendChild(li);
+  });
+}
+
+function toggleComplete(index) {
+  tasks[index].completed = !tasks[index].completed;
+  saveTasks();
+  renderTasks();
+}
+
+function deleteTask(index) {
+  tasks.splice(index, 1);
+  saveTasks();
+  renderTasks();
+}
+
+function saveTasks() {
+  localStorage.setItem("tasks", JSON.stringify(tasks));
 }
